@@ -13,5 +13,10 @@ class FetchWeatherByCityName extends WeatherEvent {
   FetchWeatherByCityName({required this.cityName});
 }
 class FetchWeatherDataBySavedLocation extends WeatherEvent {
-  
+
+}
+class UpdateSavedLocation extends WeatherEvent {
+  final String cityName;
+
+  UpdateSavedLocation({required this.cityName});
 }

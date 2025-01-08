@@ -12,6 +12,30 @@ class WeatherBloc extends Bloc<WeatherEvent, WeatherState> {
     on<FetchWeatherByLatLong>(_fetchWeatherByLatLong);
     on<FetchWeatherByCityName>(_fetchWeatherByCityName);
     on<FetchWeatherDataBySavedLocation>(_onFetchWeatherDataBySavedLocation);
+    on<UpdateSavedLocation>(_updateSavedLocation);
+  }
+
+  void _updateSavedLocation(
+      UpdateSavedLocation event, Emitter<WeatherState> emit) async {
+    try {
+      await WeatherStorage().saveLocation(event.cityName);
+      final savedLocation = await WeatherStorage().readLocation();
+      if (savedLocation != null) {
+        // Fetch weather data by saved location
+        final weatherData =
+            await weatherRepository.getWeatherDetailsByPlaceName(savedLocation);
+
+        emit(WeatherLoadedState(
+          temperature: weatherData.current?.tempC.toString(),
+          condition: weatherData.current?.condition?.text,
+          iconUrl: weatherData.current?.condition?.icon,
+          location: weatherData.location!.name ?? "",
+          isLocationSaved: true,
+        ));
+      }
+    } catch (e) {
+      emit(WeatherErrorState(message: "Error saving location: $e"));
+    }
   }
 
   void _fetchWeatherByLatLong(
@@ -24,6 +48,8 @@ class WeatherBloc extends Bloc<WeatherEvent, WeatherState> {
         temperature: weather.current?.tempC.toString() ?? '',
         condition: weather.current?.condition?.text ?? '',
         iconUrl: weather.current?.condition?.icon ?? '',
+        location: weather.location?.name ?? '',
+        isLocationSaved: false,
       ));
     } catch (e) {
       emit(WeatherErrorState(message: "Error fetching weather details: $e"));
@@ -37,13 +63,22 @@ class WeatherBloc extends Bloc<WeatherEvent, WeatherState> {
       print('City Name: ${event.cityName}');
       final weather =
           await weatherRepository.getWeatherDetailsByPlaceName(event.cityName);
+
       emit(WeatherLoadedState(
         temperature: weather.current?.tempC.toString() ?? '',
         condition: weather.current?.condition?.text ?? '',
         iconUrl: weather.current?.condition?.icon ?? '',
+        location: weather.location?.name ?? '',
+        isLocationSaved: true,
       ));
     } catch (e) {
-      emit(WeatherErrorState(message: "Error fetching weather details: $e"));
+      // Check if the error message contains 'No matching location found'
+      if (e.toString().contains('No matching location found')) {
+        emit(WeatherErrorState(
+            message: 'Location not found. Please check the city name.'));
+      } else {
+        emit(WeatherErrorState(message: "Error fetching weather details: $e"));
+      }
     }
   }
 
@@ -64,6 +99,8 @@ class WeatherBloc extends Bloc<WeatherEvent, WeatherState> {
           temperature: weatherData.current?.tempC.toString(),
           condition: weatherData.current?.condition?.text,
           iconUrl: weatherData.current?.condition?.icon,
+          location: weatherData.location!.name ?? "",
+          isLocationSaved: true,
         ));
       } else {
         // Fetch weather data by user's current location
@@ -80,11 +117,13 @@ class WeatherBloc extends Bloc<WeatherEvent, WeatherState> {
           temperature: weatherData.current?.tempC.toString(),
           condition: weatherData.current?.condition?.text,
           iconUrl: weatherData.current?.condition?.icon,
+          location: weatherData.location?.name,
+          isLocationSaved: false,
         ));
       }
     } catch (error) {
-      emit(
-          WeatherErrorState(message: "Error fetching weather details: $error"));
+      emit(WeatherErrorState(
+          message: "No Such Location Found:Cleared Saved Location"));
     }
   }
 }
