@@ -10,4 +10,7 @@ class WeatherService {
     return location != null && location.isNotEmpty;
   }
 
+  Future<void> clearLocation() async {
+    await weatherStorage.clearLocation();
+  }
 }

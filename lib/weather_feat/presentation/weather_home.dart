@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:get_it/get_it.dart';
 import 'package:moru_weather_app/core/configs/routes/route_name.dart';
 import 'package:moru_weather_app/core/theme/colors/appcolors.dart';
 import 'package:moru_weather_app/weather_feat/data/source/local/weather_service.dart';
@@ -65,6 +66,7 @@ class _WeatherHomeState extends State<WeatherHome> {
 
   @override
   Widget build(BuildContext context) {
+    final WeatherService weatherService = GetIt.instance<WeatherService>();
     return Scaffold(
       body: BlocConsumer<LocationBloc, LocationState>(
         listener: (context, state) {
@@ -143,7 +145,7 @@ class _WeatherHomeState extends State<WeatherHome> {
                     ),
                     ElevatedButton(
                       onPressed: () async {
-                        await WeatherStorage().clearLocation();
+                        await weatherService.clearLocation();
                         context
                             .read<WeatherBloc>()
                             .add(FetchWeatherDataBySavedLocation());
