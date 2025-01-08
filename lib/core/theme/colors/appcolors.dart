@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
+//Text Color
+  //Error and Validation Color
+  static const Color primaryText = Color(0xFFD32F2F);
+  
   /// Light Color Theme
   static Color lightPrimaryColor = const Color(0XFF8E6CEF);
   static Color lightBgColor = const Color(0XFFFFFFFF);

@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moru_weather_app/core/configs/routes/route_name.dart';
 import 'package:moru_weather_app/core/configs/routes/routes.dart';
+import 'package:moru_weather_app/core/di/service_locator.dart';
 import 'package:moru_weather_app/core/theme/apptheme.dart';
 import 'package:moru_weather_app/onboard_feat/data/source/local/appfirsttimestatus_storage.dart';
 import 'package:moru_weather_app/onboard_feat/presentation/bloc/appinfo_bloc.dart';
+import 'package:moru_weather_app/weather_feat/data/repositories_impl/get_weather_details_repo_impl.dart';
+import 'package:moru_weather_app/weather_feat/presentation/bloc/location/location_bloc.dart';
+import 'package:moru_weather_app/weather_feat/presentation/bloc/location/location_event.dart';
+import 'package:moru_weather_app/weather_feat/presentation/bloc/weather/weather_bloc.dart';
 
 class Root extends StatefulWidget {
   const Root({super.key});
@@ -20,7 +25,7 @@ class _RootState extends State<Root> {
   @override
   void initState() {
     super.initState();
-    // Start the future to check first-time status
+
     _firstTimeStatusFuture = _checkFirstTimeStatus();
   }
 
@@ -54,8 +59,17 @@ class _RootState extends State<Root> {
               BlocProvider<AppinfoBloc>(
                 create: (context) => AppinfoBloc(),
               ),
+              BlocProvider<LocationBloc>(
+                create: (context) =>
+                    LocationBloc()..add(LocationServiceRequestEvent()),
+              ),
+              BlocProvider<WeatherBloc>(
+                create: (context) =>
+                    WeatherBloc(getIt<GetWeatherDetailsRepoImpl>()),
+              ),
             ],
             child: MaterialApp(
+              debugShowCheckedModeBanner: false,
               title: 'Moru Weather App',
               themeMode: ThemeMode.system,
               theme: AppTheme.lightTheme,
